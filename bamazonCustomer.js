@@ -31,8 +31,6 @@ function displayProductInfo() {
 
 
 function itemSelect() {
-  connection.query("SELECT * FROM products", function(err, res) {
-    if (err) throw err;
     //Prompt User: "What would you like to buy?"
     inquirer
       .prompt([
@@ -47,23 +45,26 @@ function itemSelect() {
         message: "How many would you like to purchase?"
       }
     ])
-    .then(function(answer){
-      //get info on chosen item
-      var chosenItem;
-      for (var i = 0; i < res.length; i++){
-        if(res[i].item_id === answer.selectItemId) {
-          chosenItem = res[i];
+    .then(function(input){
+      var item = input.selectItemId;
+      var quantity = input.unitPurchaseQuantity;
+
+      connection.query("SELECT * FROM products WHERE ?", {item_id: item}, function(err, res){
+        if (err) throw err;
+
+        productData = res[0];
+        //determine if enough items are in stock
+        if (productData.stock_quantity > quantity) {
+          console.log("Insufficient quantity in stock!");
+          process.exit(-1);
         }
-      }
+        // else if
 
-      //determine if enough items are in stock
-      if (chosenItem.stock_quantity < parseInt(answer.unitPurchaseQuantity)) {
-        console.log("Insufficient quantity in stock!");
-        process.exit(-1);
-      }
+      })
+
+
+
     });
-
-  })
 }
 
 
