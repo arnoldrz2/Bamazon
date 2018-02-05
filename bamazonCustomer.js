@@ -25,8 +25,10 @@ function displayProductInfo() {
   connection.query("SELECT * FROM products", function(err, res) {
     if (err) throw err;
     console.log(res);
+    itemSelect();
   });
 }
+
 
 function itemSelect() {
   connection.query("SELECT * FROM products", function(err, res) {
@@ -37,13 +39,6 @@ function itemSelect() {
         {
         name: "selectItemId",
         type: "input",
-        choices: function() {
-          var choiceArray = [];
-          for (var i = 0, i < res.length; i++) {
-            choiceArray.push(results[i].product_name);
-          }
-          return choiceArray;
-        },
         message: "Please enter the item_id number of the product you would like to purchase."
       },
       {
@@ -53,12 +48,26 @@ function itemSelect() {
       }
     ])
     .then(function(answer){
-      if(answer)
-    })
-  }
+      //get info on chosen item
+      var chosenItem;
+      for (var i = 0; i < res.length; i++){
+        if(res[i].item_id === answer.selectItemId) {
+          chosenItem = res[i];
+        }
+      }
+
+      //determine if enough items are in stock
+      if (chosenItem.stock_quantity < parseInt(answer.unitPurchaseQuantity)) {
+        console.log("Insufficient quantity in stock!");
+        process.exit(-1);
+      }
+    });
+
+  })
+}
 
 
-  //Inquirer Example
-  inquirer.prompt([/* Pass your questions in here */]).then(answers => {
-      // Use user feedback for... whatever!!
-  });
+  // Inquirer Example
+  // inquirer.prompt([/* Pass your questions in here */]).then(answers => {
+  //     // Use user feedback for... whatever!!
+  // });
